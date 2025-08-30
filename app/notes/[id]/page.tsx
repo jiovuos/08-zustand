@@ -1,40 +1,60 @@
 import {
   dehydrate,
   HydrationBoundary,
-  QueryClient,
+  QueryClient
 } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
 import NoteDetailsClient from "./NoteDetails.client";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-// 🔹 SEO для сторінки
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params
+}: PageProps): Promise<Metadata> {
   const { id } = await params;
+
   try {
     const note = await fetchNoteById(id);
+
+    const description =
+      note.content && note.content.trim() !== ""
+        ? note.content.slice(0, 100) + (note.content.length > 100 ? "..." : "")
+        : "Note details";
+
     return {
-      title: note.title,
-      description: note.content.slice(0, 100) + "...",
+      title: `${note.title} - NoteHub`,
+      description,
+      openGraph: {
+        title: `${note.title} - NoteHub`,
+        description,
+        url: `https://08-zustand.vercel.app/notes/${id}`,
+        images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"]
+      }
     };
   } catch {
     return {
-      title: "Note not found",
+      title: "Note not found - NoteHub",
+      description: "This note does not exist",
+      openGraph: {
+        title: "Note not found - NoteHub",
+        description: "This note does not exist",
+        url: `https://08-zustand.vercel.app/notes/${id}`,
+        images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"]
+      }
     };
   }
 }
 
-// 🔹 Рендер сторінки з React Query
 export default async function NoteDetailsPage({ params }: PageProps) {
   const { id } = await params;
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
     queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
+    queryFn: () => fetchNoteById(id)
   });
 
   return (
