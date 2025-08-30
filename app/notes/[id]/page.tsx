@@ -5,18 +5,36 @@ import {
 } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
 import NoteDetailsClient from "./NoteDetails.client";
+import { Metadata } from "next";
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function NoteDetailsPage(props: PageProps) {
-  const params = await props.params;
+// 🔹 SEO для сторінки
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const note = await fetchNoteById(id);
+    return {
+      title: note.title,
+      description: note.content.slice(0, 100) + "...",
+    };
+  } catch {
+    return {
+      title: "Note not found",
+    };
+  }
+}
+
+// 🔹 Рендер сторінки з React Query
+export default async function NoteDetailsPage({ params }: PageProps) {
+  const { id } = await params;
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery({
-    queryKey: ["note", params.id],
-    queryFn: () => fetchNoteById(params.id),
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
   });
 
   return (

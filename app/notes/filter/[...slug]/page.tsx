@@ -7,10 +7,30 @@ import { notFound } from "next/navigation";
 import { fetchNotes, type FetchNotesResponse } from "@/lib/api";
 import type { NoteTag } from "@/types/note";
 import NotesClient from "./Notes.client";
+import type { Metadata } from "next";
 
 type PageProps = {
   params?: Promise<{ slug?: string[] }>;
 };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolved = await Promise.resolve(params);
+  const slug = resolved?.slug ?? [];
+  const tag = slug[0] ?? "All";
+
+  return {
+    title: `Notes filtered by ${tag}`,
+    description: `Browse notes filtered by ${tag} in NoteHub`,
+    openGraph: {
+      title: `Notes filtered by ${tag}`,
+      description: `Browse notes filtered by ${tag} in NoteHub`,
+      url: `https://08-zustand.vercel.app/notes/filter/${tag}`,
+      images: [
+        "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+      ],
+    },
+  };
+}
 
 export default async function NotesFilterPage({ params }: PageProps) {
   const resolved = await Promise.resolve(params);
