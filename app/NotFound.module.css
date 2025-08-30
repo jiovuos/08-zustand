@@ -1,0 +1,15 @@
+.container {
+  text-align: center;
+  padding: 50px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 1.2rem;
+  color: #666;
+}
